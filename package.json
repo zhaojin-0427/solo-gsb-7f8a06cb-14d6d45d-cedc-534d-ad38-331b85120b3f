@@ -1,7 +1,7 @@
 {
   "name": "saddle-stitch-imposition",
   "version": "1.0.0",
-  "description": "本地骑马订 PDF 拼版与印前核对工具（拼版 / 文字安全区预检 / 页码核对 / 字体嵌入核查 / 位图有效分辨率预检 / 裁切与出血盒核验 / 注释印刷风险核查，Node.js + Express + pdf-lib + PDF.js）",
+  "description": "本地骑马订 PDF 拼版与印前核对工具（拼版 / 文字安全区预检 / 页码核对 / 字体嵌入核查 / 位图有效分辨率预检 / 裁切与出血盒核验 / 注释印刷风险核查 / 内部链接目标核对，Node.js + Express + pdf-lib + PDF.js）",
   "type": "module",
   "main": "server.js",
   "scripts": {

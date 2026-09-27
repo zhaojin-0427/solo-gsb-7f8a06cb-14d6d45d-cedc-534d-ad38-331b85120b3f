@@ -37,6 +37,14 @@ const ANNOT_PAGE_STATUS_LABEL = {
   unknown: { text: '无法判断', cls: 'unknown' },
 };
 
+// 内部链接目标核对：单条链接状态
+const LINK_STATUS_LABEL = {
+  ok: { text: '有效', cls: 'ok' },
+  broken: { text: '失效', cls: 'risk' },
+  unknown: { text: '无法判断', cls: 'unknown' },
+  'out-of-scope': { text: '范围外', cls: 'skip' },
+};
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   hideError();
@@ -212,6 +220,82 @@ function renderAnnotations(ann) {
   for (const page of ann.pages) {
     wrap.appendChild(renderAnnotPage(page));
   }
+
+  // 内部链接目标核对（同一报告内随附）
+  if (ann.linkTargets) renderLinkTargets(ann.linkTargets);
+}
+
+// ---- 内部链接目标核对 ----
+
+function renderLinkTargets(lt) {
+  const itemList = (arr) =>
+    arr.length === 0
+      ? '无'
+      : arr
+          .map((it) => `第 ${it.pageNumber} 页第 ${it.annotIndex} 条`)
+          .join('、');
+
+  document.getElementById('link-summary').replaceChildren(
+    row('Link 注释总数', `${lt.total} 条`),
+    row('有效', `${lt.counts.ok} 条（目标为本文件页面）`),
+    row(
+      '失效',
+      `${lt.counts.broken} 条（${itemList(lt.brokenItems)}）：未设目标、缺名或目标页不存在`
+    ),
+    row(
+      '无法判断',
+      `${lt.counts.unknown} 条（${itemList(lt.unknownItems)}）：坏引用、循环、重名、非法类型或 /Dest 与 /D 并存`
+    ),
+    row(
+      '范围外',
+      `${lt.counts.outOfScope} 条（非 /GoTo 动作，如 /URI、/GoToR，不访问网络）`
+    )
+  );
+
+  const wrap = document.getElementById('link-items');
+  wrap.textContent = '';
+  const card = document.createElement('div');
+  card.className = 'card page-card';
+  if (lt.total === 0) {
+    card.appendChild(noteP('全文无 /Link 注释，没有可核对的内部链接目标。'));
+  } else {
+    card.appendChild(renderLinkTable(lt.items));
+  }
+  wrap.appendChild(card);
+}
+
+function renderLinkTable(items) {
+  const table = document.createElement('table');
+  table.className = 'annots';
+  table.innerHTML = `
+    <thead>
+      <tr><th>来源页</th><th>注释序号</th><th>目标页</th><th>状态</th><th>原因</th></tr>
+    </thead>
+    <tbody></tbody>`;
+  const tbody = table.querySelector('tbody');
+  for (const it of items) {
+    const tr = document.createElement('tr');
+    if (it.status === 'broken') tr.className = 'row-mismatch';
+    else if (it.status === 'unknown') tr.className = 'row-unknown';
+
+    tr.appendChild(td(`第 ${it.pageNumber} 页`, 'num'));
+    tr.appendChild(td(`第 ${it.annotIndex} 条`, 'num'));
+    tr.appendChild(
+      td(it.targetPage !== null ? `第 ${it.targetPage} 页` : '—', 'num')
+    );
+
+    const statusTd = document.createElement('td');
+    const label = LINK_STATUS_LABEL[it.status];
+    const chip = document.createElement('span');
+    chip.className = `badge ${label.cls}`;
+    chip.textContent = label.text;
+    statusTd.appendChild(chip);
+    tr.appendChild(statusTd);
+
+    tr.appendChild(td(it.reason));
+    tbody.appendChild(tr);
+  }
+  return table;
 }
 
 function renderAnnotPage(page) {

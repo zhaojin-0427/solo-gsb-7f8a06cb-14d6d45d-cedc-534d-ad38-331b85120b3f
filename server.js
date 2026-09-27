@@ -277,7 +277,9 @@ app.post('/api/image-resolution', (req, res) => {
 // 服务端用 pdf-lib 逐页读取继承的 MediaBox/CropBox/Rotate 与页面显式声明的
 // TrimBox/BleedBox，按旋转后阅读方向核对成品尺寸并逐边计算可用出血。
 // 同一份上传同时进入“注释印刷风险区”：逐页解析 /Annots 注释的
-// Subtype/Rect/F/AP，判定屏显与打印状态，结果随同一响应返回。
+// Subtype/Rect/F/AP，判定屏显与打印状态；并对 /Link 注释做内部链接目标
+// 核对（/Dest 或 /A（/S=/GoTo）的 /D 是否指向本文件页面），
+// 两项结果随同一响应返回。
 app.post('/api/bleedboxes', (req, res) => {
   upload.single('pdf')(req, res, async (err) => {
     if (err) {

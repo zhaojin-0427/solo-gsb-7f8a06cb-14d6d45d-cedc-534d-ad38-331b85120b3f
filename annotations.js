@@ -16,6 +16,12 @@
 //     “待确认”；屏显候选（未设 Hidden/NoView）而未设 Print 为“漏印风险”；
 //   - 坏引用或非法字段（注释不是字典、Subtype/Rect/F 非法等）标为“无法判断”，
 //     单条失败不中断同页其他注释；
+//   - /Subtype 为 /Link 的注释另做“内部链接目标核对”：检查 /Dest 或
+//     /A（/S=/GoTo）的 /D 是否指向本文件页面（两者并存记为无法判断）；
+//     目标数组只核对首项页面引用（页序从 1 起，不查缩放参数），名称查
+//     Catalog/Dests、字符串查 Catalog/Names/Dests 名称树；未设目标、缺名
+//     或目标页不存在记为失效，坏引用/循环/重名/非法类型记为无法判断，
+//     其他动作（如 /URI）记为范围外、不访问网络；
 //   - 只核查 PDF 注释对象的属性，不模拟渲染（不重生成外观、不绘制页面）。
 //
 // 解析使用 pdf-lib 底层对象模型（PDFDict / PDFArray / PDFStream / PDFRef）。
@@ -29,6 +35,11 @@ import {
   PDFRef,
   PDFStream,
 } from 'pdf-lib';
+import {
+  createLinkChecker,
+  LINK_STATUS,
+  LINK_SCOPE_NOTE,
+} from './linktargets.js';
 
 export class AnnotationError extends Error {
   constructor(message) {
@@ -302,7 +313,7 @@ function readAppearance(context, dict) {
 }
 
 /** 分析单条注释（raw 为 /Annots 数组元素，可直接或间接）。 */
-function analyzeAnnotation(context, raw, index, frame) {
+function analyzeAnnotation(context, raw, index, frame, linkChecker) {
   const annot = {
     index,
     subtype: null,
@@ -313,6 +324,7 @@ function analyzeAnnotation(context, raw, index, frame) {
     offPage: null,
     screen: null,
     print: null,
+    linkTarget: null, // /Link 注释的内部目标核对结果（非 /Link 为 null）
     status: ANNOT_STATUS.unknown,
     notes: [],
   };
@@ -335,6 +347,11 @@ function analyzeAnnotation(context, raw, index, frame) {
     Boolean
   );
   if (subtypeRead.subtype) annot.subtype = subtypeRead.subtype;
+  // /Link 注释：核对内部链接目标。该核对独立于印刷风险判定，
+  // 即使 Rect/F 等字段非法（下面提前返回“无法判断”）也照常给出目标结果。
+  if (subtypeRead.subtype === 'Link' && linkChecker) {
+    annot.linkTarget = linkChecker.check(dict);
+  }
   if (flagsRead.flags !== undefined) {
     annot.flags = flagsRead.flags;
     annot.flagNames = FLAG_BITS.filter(([bit]) => flagsRead.flags & bit).map(
@@ -430,7 +447,7 @@ function finalizeUnknown(annot) {
 }
 
 /** 逐页分析：读取页面自身的 /Annots 并逐条判定。 */
-function analyzePageAnnotations(context, page, pageNumber) {
+function analyzePageAnnotations(context, page, pageNumber, linkChecker) {
   const node = page.node;
   const record = {
     pageNumber,
@@ -474,7 +491,9 @@ function analyzePageAnnotations(context, page, pageNumber) {
     } catch {
       raw = undefined;
     }
-    record.annotations.push(analyzeAnnotation(context, raw, i + 1, frame));
+    record.annotations.push(
+      analyzeAnnotation(context, raw, i + 1, frame, linkChecker)
+    );
   }
 
   const counts = {
@@ -556,8 +575,10 @@ export async function checkAnnotations(buffer) {
   }
 
   const context = doc.context;
+  // 内部链接目标核对器：每份文档一个（页面引用表与名称索引按需惰性构建）
+  const linkChecker = createLinkChecker(context, doc.catalog, pdfPages);
   const pages = pdfPages.map((page, i) =>
-    analyzePageAnnotations(context, page, i + 1)
+    analyzePageAnnotations(context, page, i + 1, linkChecker)
   );
 
   const withAnnots = pages.filter((pg) => pg.annotations.length > 0);
@@ -568,6 +589,33 @@ export async function checkAnnotations(buffer) {
       .map((pg) => pg.pageNumber);
   const totalCount = (key) =>
     pages.reduce((n, pg) => n + (pg.counts ? pg.counts[key] : 0), 0);
+
+  // 内部链接目标核对汇总：逐条（来源页、注释序号、目标页、状态、原因）
+  const linkItems = [];
+  for (const pg of pages) {
+    for (const a of pg.annotations) {
+      if (!a.linkTarget) continue;
+      linkItems.push({
+        pageNumber: pg.pageNumber,
+        annotIndex: a.index,
+        targetPage: a.linkTarget.targetPage,
+        status: a.linkTarget.status,
+        reason: a.linkTarget.reason,
+      });
+    }
+  }
+  const linkCountKey = {
+    [LINK_STATUS.ok]: 'ok',
+    [LINK_STATUS.broken]: 'broken',
+    [LINK_STATUS.unknown]: 'unknown',
+    [LINK_STATUS.outOfScope]: 'outOfScope',
+  };
+  const linkCounts = { ok: 0, broken: 0, unknown: 0, outOfScope: 0 };
+  for (const item of linkItems) linkCounts[linkCountKey[item.status]] += 1;
+  const linkRefsOf = (status) =>
+    linkItems
+      .filter((it) => it.status === status)
+      .map((it) => ({ pageNumber: it.pageNumber, annotIndex: it.annotIndex }));
 
   return {
     pageCount: pages.length,
@@ -592,5 +640,14 @@ export async function checkAnnotations(buffer) {
       },
     },
     scopeNote: SCOPE_NOTE,
+    // 内部链接目标核对（/Link 注释）：随注释报告一并返回
+    linkTargets: {
+      total: linkItems.length,
+      items: linkItems,
+      counts: linkCounts,
+      brokenItems: linkRefsOf(LINK_STATUS.broken),
+      unknownItems: linkRefsOf(LINK_STATUS.unknown),
+      scopeNote: LINK_SCOPE_NOTE,
+    },
   };
 }
