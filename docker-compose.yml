@@ -1,0 +1,9 @@
+services:
+  saddle-stitch:
+    build: .
+    image: saddle-stitch-imposition:latest
+    container_name: saddle-stitch-imposition
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    init: true

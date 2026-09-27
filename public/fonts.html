@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>原稿字体嵌入核查（本地）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="topnav">
+      <a href="/">← 返回骑马订拼版</a>
+      <a href="/preflight.html">印前文字安全区预检 →</a>
+      <a href="/pagenumbers.html">原稿页脚页码核对 →</a>
+      <a href="/imageresolution.html">原稿位图有效分辨率预检 →</a>
+      <a href="/bleedboxes.html">裁切与出血盒核验 →</a>
+    </nav>
+    <h1>原稿字体嵌入核查</h1>
+    <p class="subtitle">
+      本地处理，文件不离开本机。上传原稿 PDF，逐页读取（含继承的）页面资源中的
+      字体字典，并递归检查表单 XObject 自带的资源：普通字体检查 FontDescriptor
+      中的 FontFile / FontFile2 / FontFile3 字体流，Type0 字体沿 DescendantFonts
+      子字体查找；Type3 字体标为内置字形，未嵌入的标准 14 字体单列为可替代。
+    </p>
+
+    <section class="card">
+      <form id="fonts-form">
+        <div class="field">
+          <label for="pdf">选择原稿 PDF 文件</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf,.pdf" required />
+          <small class="hint">与拼版页相同的上传限制：单个 PDF 文件、上限 100 MB、未加密。</small>
+        </div>
+
+        <button type="submit" id="submit-btn">上传并核查</button>
+      </form>
+    </section>
+
+    <div id="error" class="error-box" hidden></div>
+    <div id="loading" class="loading" hidden>正在解析资源字典并核查字体嵌入，请稍候…</div>
+
+    <section id="result" hidden>
+      <div class="card summary-card">
+        <h2>核查结果</h2>
+        <dl id="summary" class="summary"></dl>
+      </div>
+      <div id="pages"></div>
+      <p class="footnote">
+        说明：检查对象为页面及表单 XObject 资源字典中的字体引用（含自 Pages
+        父节点继承的 Resources），不判断字形是否在页面中实际绘制；
+        同一表单被多页引用时逐页计入；字体流须为非空 PDF 流才算已嵌入；
+        Type3 字体字形内建于内容流，无需嵌入字体文件；未嵌入的标准 14 字体
+        可由查看器内置字体替代。
+      </p>
+    </section>
+
+    <footer class="footer">
+      判定依据：FontDescriptor 中的 FontFile / FontFile2 / FontFile3 为非空 PDF 流；
+      Type0 字体沿 DescendantFonts 子字体查找。
+    </footer>
+  </main>
+  <script src="/fonts.js"></script>
+</body>
+</html>

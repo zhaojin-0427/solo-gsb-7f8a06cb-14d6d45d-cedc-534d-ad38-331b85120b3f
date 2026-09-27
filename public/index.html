@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>骑马订 PDF 拼版（本地）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="topnav">
+      <a href="/preflight.html">印前文字安全区预检 →</a>
+      <a href="/pagenumbers.html">原稿页脚页码核对 →</a>
+      <a href="/fonts.html">原稿字体嵌入核查 →</a>
+      <a href="/imageresolution.html">原稿位图有效分辨率预检 →</a>
+      <a href="/bleedboxes.html">裁切与出血盒核验 →</a>
+    </nav>
+    <h1>骑马订 PDF 拼版</h1>
+    <p class="subtitle">
+      本地处理，文件不离开本机。要求：所有页面同尺寸、无旋转、未加密的 PDF；
+      原页不缩放，每面宽为原页两倍。
+    </p>
+
+    <section class="card">
+      <form id="impose-form">
+        <div class="field">
+          <label for="pdf">选择 PDF 文件</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf,.pdf" required />
+        </div>
+
+        <div class="field">
+          <label>每帖页数</label>
+          <div class="radio-row" role="radiogroup" aria-label="每帖页数">
+            <label><input type="radio" name="sheetsPerSignature" value="4" /> 4 页</label>
+            <label><input type="radio" name="sheetsPerSignature" value="8" checked /> 8 页</label>
+            <label><input type="radio" name="sheetsPerSignature" value="16" /> 16 页</label>
+          </div>
+          <small class="hint">按原顺序分帖；末帖不足时在尾部补白至所选页数。</small>
+        </div>
+
+        <button type="submit" id="submit-btn">上传并拼版</button>
+      </form>
+    </section>
+
+    <div id="error" class="error-box" hidden></div>
+    <div id="loading" class="loading" hidden>正在拼版，请稍候…</div>
+
+    <section id="result" hidden>
+      <div class="card summary-card">
+        <h2>拼版结果核对</h2>
+        <dl id="summary" class="summary"></dl>
+        <div class="download-bar">
+          <a id="download-link" class="btn primary" href="#" download>下载拼版 PDF</a>
+        </div>
+        <p class="print-tip">
+          打印请选择：双面打印 · 横向 · <strong>短边翻转（Flip on short edge）</strong>
+          · 缩放 100%（实际大小，不缩放）。
+        </p>
+      </div>
+      <div id="sheets"></div>
+    </section>
+
+    <footer class="footer">
+      每帖第 i 张纸（i 从 0 起）：正面左/右 = 第 N−2i / 1+2i 页，
+      背面左/右 = 第 2+2i / N−1−2i 页；输出按正面、背面交替排列。
+    </footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

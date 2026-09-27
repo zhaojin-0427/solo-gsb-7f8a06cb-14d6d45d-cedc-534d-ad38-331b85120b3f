@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>裁切与出血盒核验（本地）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="topnav">
+      <a href="/">← 返回骑马订拼版</a>
+      <a href="/preflight.html">印前文字安全区预检 →</a>
+      <a href="/pagenumbers.html">原稿页脚页码核对 →</a>
+      <a href="/fonts.html">原稿字体嵌入核查 →</a>
+      <a href="/imageresolution.html">原稿位图有效分辨率预检 →</a>
+    </nav>
+    <h1>裁切与出血盒核验</h1>
+    <p class="subtitle">
+      本地处理，文件不离开本机。上传原稿 PDF 并填写成品宽、高与最低出血量，
+      程序逐页读取继承的 MediaBox、CropBox、Rotate 以及页面显式声明的
+      TrimBox、BleedBox（缺少后两者标为未声明，不套用默认盒），按旋转后的
+      阅读方向核对 TrimBox 与成品尺寸，并把 BleedBox 与 CropBox、MediaBox 的
+      交集作为可用出血范围，逐边计算超出 TrimBox 的距离。同一份上传同时进入
+      「注释印刷风险区」：逐页解析 /Annots 注释的类型、位置、标志位与外观，
+      判定屏显与打印状态。
+    </p>
+
+    <section class="card">
+      <form id="bleedboxes-form">
+        <div class="field">
+          <label for="pdf">选择原稿 PDF 文件</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf,.pdf" required />
+          <small class="hint">与拼版页相同的上传限制：单个 PDF 文件、上限 100 MB、未加密；核验按页处理，允许页面旋转、页尺寸不一致。</small>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="finishedWidthMm">成品宽度（毫米）</label>
+            <input type="number" id="finishedWidthMm" name="finishedWidthMm"
+                   min="0.1" step="0.1" value="210" required />
+          </div>
+          <div class="field">
+            <label for="finishedHeightMm">成品高度（毫米）</label>
+            <input type="number" id="finishedHeightMm" name="finishedHeightMm"
+                   min="0.1" step="0.1" value="297" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="minBleedMm">最低出血量（毫米）</label>
+          <input type="number" id="minBleedMm" name="minBleedMm"
+                 min="0.1" step="0.1" value="3" required />
+          <small class="hint">三项均须大于 0。成品尺寸按旋转后的阅读方向与 TrimBox 比较（宽对宽、高对高）。</small>
+        </div>
+
+        <button type="submit" id="submit-btn">上传并核验</button>
+      </form>
+    </section>
+
+    <div id="error" class="error-box" hidden></div>
+    <div id="loading" class="loading">正在读取页面盒并核对裁切与出血，请稍候…</div>
+
+    <section id="result" hidden>
+      <div class="card summary-card">
+        <h2>核验结果</h2>
+        <dl id="summary" class="summary"></dl>
+      </div>
+      <div id="pages"></div>
+      <p class="footnote">
+        说明：仅核验 PDF 页面各盒（MediaBox / CropBox / TrimBox / BleedBox）的
+        <strong>几何位置与尺寸</strong>，<strong>不判断页面画面（图像、底色等）
+        是否实际铺满出血区</strong>；TrimBox、BleedBox 只认页面显式声明，缺少时
+        标为“未声明”，不回退套用默认盒；可用出血范围为 BleedBox 与 CropBox、
+        MediaBox 的交集，各边距离严格小于最低出血量才报风险（恰好达到不报）。
+      </p>
+
+      <h2 class="section-heading">注释印刷风险区</h2>
+      <div class="card summary-card">
+        <h2>注释印刷风险汇总</h2>
+        <dl id="annot-summary" class="summary"></dl>
+      </div>
+      <div id="annot-pages"></div>
+      <p class="footnote">
+        说明：注释区仅核查 PDF 注释对象的<strong>属性</strong>（/Subtype、/Rect、
+        /F 标志位与 /AP 外观流），<strong>不模拟渲染</strong>、不重生成外观；
+        可见页框为继承的 CropBox（缺省 MediaBox），注释矩形与页框无交集标为
+        “页外”；Hidden 覆盖 Print（隐藏注释不显示也不打印），NoView 只排除屏显、
+        不取消 Print；设 Print 且外观有效为“打印候选”，设 Print 但外观缺失或
+        损坏为“待确认”，屏显候选而未设 Print 为“漏印风险”。
+      </p>
+    </section>
+
+    <footer class="footer">
+      判定依据：TrimBox 旋转后阅读尺寸与成品尺寸相差超过 0.5 mm 报尺寸不符；
+      出血各边严格小于最低出血量报风险；无效盒或无交集标为无法判断。
+      注释区：屏显候选而未设 Print 报漏印风险，设 Print 但外观缺失或损坏报待确认；
+      仅核查 PDF 属性，不模拟渲染。
+    </footer>
+  </main>
+  <script src="/bleedboxes.js"></script>
+</body>
+</html>

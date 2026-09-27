@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>原稿位图有效分辨率预检（本地）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="topnav">
+      <a href="/">← 返回骑马订拼版</a>
+      <a href="/preflight.html">印前文字安全区预检 →</a>
+      <a href="/pagenumbers.html">原稿页脚页码核对 →</a>
+      <a href="/fonts.html">原稿字体嵌入核查 →</a>
+      <a href="/bleedboxes.html">裁切与出血盒核验 →</a>
+    </nav>
+    <h1>原稿位图有效分辨率预检</h1>
+    <p class="subtitle">
+      本地处理，文件不离开本机。上传原稿 PDF 并填写最低分辨率（72～1200 DPI），
+      程序读取 PDF.js 绘制指令，随保存、恢复与矩阵变换追踪图形状态（含表单 XObject
+      的嵌套变换），逐次计算内容流中<strong>实际绘制的普通位图</strong>的横向、
+      纵向有效 DPI；两个 DPI 的较小值严格低于阈值时报风险，支持旋转与非等比缩放。
+    </p>
+
+    <section class="card">
+      <form id="image-resolution-form">
+        <div class="field">
+          <label for="pdf">选择原稿 PDF 文件</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf,.pdf" required />
+          <small class="hint">与拼版页相同的上传限制：单个 PDF 文件、上限 100 MB、未加密。</small>
+        </div>
+
+        <div class="field">
+          <label for="minDpi">最低分辨率（DPI）</label>
+          <input type="number" id="minDpi" name="minDpi"
+                 min="72" max="1200" step="1" value="300" required />
+          <small class="hint">72～1200 之间的整数；每次放置的横、纵 DPI 取较小值，严格低于该值才报风险。</small>
+        </div>
+
+        <button type="submit" id="submit-btn">上传并预检</button>
+      </form>
+    </section>
+
+    <div id="error" class="error-box" hidden></div>
+    <div id="loading" hidden class="loading">正在读取绘制指令并计算位图有效分辨率，请稍候…</div>
+
+    <section id="result" hidden>
+      <div class="card summary-card">
+        <h2>预检结果</h2>
+        <dl id="summary" class="summary"></dl>
+      </div>
+      <div id="pages"></div>
+      <p class="footnote">
+        说明：只检查内容流中<strong>实际绘制</strong>的普通 Image XObject，
+        仅在资源字典中出现、未被绘制的图片不计入；同一图像多次放置时逐次计算。
+        <strong>内联图像（BI…EI）、图像蒙版（ImageMask）不纳入检查</strong>；
+        横向、纵向 DPI 由图像像素宽、高分别除以变换后的横、纵边长（英寸）得到，
+        旋转与非等比缩放在各自方向独立计算；<strong>不判断图像是否被裁切或遮挡</strong>。
+      </p>
+    </section>
+
+    <footer class="footer">
+      判定依据：每次绘制取 min(横向 DPI, 纵向 DPI) 与阈值比较，严格低于阈值才报风险（恰好相等不报）。
+    </footer>
+  </main>
+  <script src="/imageresolution.js"></script>
+</body>
+</html>

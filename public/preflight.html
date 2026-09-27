@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>印前文字安全区预检（本地）</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="container">
+    <nav class="topnav">
+      <a href="/">← 返回骑马订拼版</a>
+      <a href="/pagenumbers.html">原稿页脚页码核对 →</a>
+      <a href="/fonts.html">原稿字体嵌入核查 →</a>
+      <a href="/imageresolution.html">原稿位图有效分辨率预检 →</a>
+      <a href="/bleedboxes.html">裁切与出血盒核验 →</a>
+    </nav>
+    <h1>印前文字安全区预检</h1>
+    <p class="subtitle">
+      本地处理，文件不离开本机。上传原稿 PDF，检查每页文字是否穿入边缘禁入带：
+      以可见页框为界，奇数页左侧、偶数页右侧为装订边（使用装订边距），
+      其余三边使用裁切边距；旋转文字按变换后的外接框计算。
+    </p>
+
+    <section class="card">
+      <form id="preflight-form">
+        <div class="field">
+          <label for="pdf">选择原稿 PDF 文件</label>
+          <input type="file" id="pdf" name="pdf" accept="application/pdf,.pdf" required />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="trimMarginMm">裁切边距（毫米）</label>
+            <input type="number" id="trimMarginMm" name="trimMarginMm"
+                   min="0.1" step="0.1" value="3" required />
+            <small class="hint">用于上、下及非装订侧边。</small>
+          </div>
+          <div class="field">
+            <label for="bindingMarginMm">装订边距（毫米）</label>
+            <input type="number" id="bindingMarginMm" name="bindingMarginMm"
+                   min="0.1" step="0.1" value="12" required />
+            <small class="hint">用于装订边（奇数页左、偶数页右）。</small>
+          </div>
+        </div>
+        <small class="hint">两项边距均须大于 0，且小于页面短边的一半。</small>
+
+        <button type="submit" id="submit-btn">上传并预检</button>
+      </form>
+    </section>
+
+    <div id="error" class="error-box" hidden></div>
+    <div id="loading" class="loading" hidden>正在提取文字并检查安全区，请稍候…</div>
+
+    <section id="result" hidden>
+      <div class="card summary-card">
+        <h2>预检结果</h2>
+        <dl id="summary" class="summary"></dl>
+      </div>
+      <div id="pages"></div>
+      <p class="footnote">
+        说明：仅检查 PDF 中可提取的文字（含旋转文字的变换外接框）；
+        图像、扫描件中的文字未纳入检查。文本框恰好贴着禁入带边界时不计风险；
+        越出页框的边距以负值表示。
+      </p>
+    </section>
+
+    <footer class="footer">
+      禁入带规则：奇数页左侧、偶数页右侧为装订边（装订边距），其余三边为裁切边（裁切边距）。
+    </footer>
+  </main>
+  <script src="/preflight.js"></script>
+</body>
+</html>

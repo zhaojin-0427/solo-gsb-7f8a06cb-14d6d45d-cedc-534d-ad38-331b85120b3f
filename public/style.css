@@ -1,0 +1,409 @@
+:root {
+  --border: #d7dce3;
+  --muted: #6b7280;
+  --accent: #1f5fbf;
+  --accent-dark: #174a96;
+  --bg: #f5f7fa;
+  --front: #e8f1ff;
+  --front-border: #9dbcf0;
+  --back: #fdf3e3;
+  --back-border: #e2b87d;
+  --blank: #eef0f3;
+  --blank-border: #c3c9d2;
+  --danger-bg: #fdecec;
+  --danger-border: #e0a5a5;
+  --danger-text: #9b1c1c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: #1f2937;
+  line-height: 1.55;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+}
+
+h1 { font-size: 26px; margin: 0 0 6px; }
+h2 { font-size: 19px; margin: 0 0 12px; }
+
+.subtitle { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+
+.field { margin-bottom: 18px; }
+.field > label { display: block; font-weight: 600; margin-bottom: 6px; }
+
+input[type="file"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: #fafbfc;
+}
+
+.radio-row { display: flex; gap: 20px; }
+.radio-row label { font-weight: 400; display: inline-flex; gap: 6px; align-items: center; }
+.hint { color: var(--muted); display: block; margin-top: 6px; }
+
+button, .btn {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+}
+#submit-btn { background: var(--accent); color: #fff; }
+#submit-btn:hover { background: var(--accent-dark); }
+#submit-btn:disabled { background: #9db3d1; cursor: wait; }
+
+.btn.primary { background: #1a8a44; color: #fff; }
+.btn.primary:hover { background: #147036; }
+
+.error-box {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+}
+
+.loading { color: var(--muted); margin-bottom: 20px; }
+
+.summary {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 20px;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+.summary dt { color: var(--muted); }
+.summary dd { margin: 0; }
+
+.download-bar { margin-bottom: 10px; }
+.print-tip {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: #f0f7ff;
+  border: 1px solid #c6ddfa;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.signature { margin-bottom: 22px; }
+.signature-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 18px 0 8px;
+}
+.signature-meta { color: var(--muted); font-weight: 400; font-size: 13px; }
+
+table.faces {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+}
+table.faces th, table.faces td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: center;
+}
+table.faces th {
+  background: #f0f2f5;
+  font-weight: 600;
+}
+td.side { white-space: nowrap; color: #374151; }
+tr.front td.side { background: var(--front); }
+tr.back td.side { background: var(--back); }
+
+.cell {
+  display: inline-block;
+  min-width: 64px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.cell.page { background: var(--front); border: 1px solid var(--front-border); }
+tr.back .cell.page { background: var(--back); border-color: var(--back-border); }
+.cell.blank {
+  background: var(--blank);
+  border: 1px dashed var(--blank-border);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.footer {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+/* ---- 印前文字安全区预检 ---- */
+.topnav {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+.topnav a { color: var(--accent); text-decoration: none; }
+.topnav a:hover { text-decoration: underline; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 20px;
+}
+input[type="number"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+}
+.field + button, .hint + button { margin-top: 14px; }
+
+.page-card { padding: 16px 20px; }
+.page-card.risk { border-color: var(--danger-border); }
+.page-card.unknown { border-style: dashed; }
+
+.page-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.page-title { font-size: 15px; font-weight: 700; }
+.page-meta { color: var(--muted); font-size: 13px; }
+
+.badge {
+  margin-left: auto;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.badge.ok { background: #e6f6ec; border: 1px solid #9fd7b4; color: #146c2e; }
+.badge.risk {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+}
+.badge.unknown {
+  background: var(--blank);
+  border: 1px dashed var(--blank-border);
+  color: var(--muted);
+}
+
+.page-note { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+
+table.risks {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 6px;
+}
+table.risks th, table.risks td {
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  text-align: left;
+}
+table.risks th { background: #f0f2f5; font-weight: 600; }
+td.frag {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edge-chip {
+  display: inline-block;
+  margin: 2px 6px 2px 0;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.min-dist { font-weight: 700; white-space: nowrap; }
+.min-dist.negative { color: var(--danger-text); }
+
+/* ---- 原稿页脚页码核对 ---- */
+.badge.skip {
+  background: var(--blank);
+  border: 1px solid var(--blank-border);
+  color: var(--muted);
+}
+
+table.check {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+table.check th, table.check td {
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  text-align: left;
+}
+table.check th { background: #f0f2f5; font-weight: 600; }
+table.check td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+tr.row-mismatch td { background: var(--danger-bg); }
+tr.row-unknown td { background: #fafbfc; }
+
+.footnote {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+/* ---- 原稿字体嵌入核查 ---- */
+.badge.replaceable {
+  background: #fdf3e3;
+  border: 1px solid var(--back-border);
+  color: #8a5a00;
+}
+.badge.type3 {
+  background: #eef2ff;
+  border: 1px solid #b6c2f0;
+  color: #35418f;
+}
+
+table.fonts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 6px;
+}
+table.fonts th, table.fonts td {
+  border: 1px solid var(--border);
+  padding: 7px 10px;
+  text-align: left;
+}
+table.fonts th { background: #f0f2f5; font-weight: 600; }
+table.fonts td.resname { white-space: nowrap; font-weight: 600; }
+table.fonts td.basefont {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+table.fonts .badge { margin-left: 0; }
+
+/* ---- 原稿位图有效分辨率预检 ---- */
+table.imageres td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+table.imageres td.dpi, table.imageres td.min-dpi { font-weight: 600; }
+table.imageres td.min-dpi.negative { color: var(--danger-text); }
+table.imageres .badge { margin-left: 0; }
+
+/* ---- 裁切与出血盒核验 ---- */
+.badge.undeclared {
+  background: #fdf3e3;
+  border: 1px solid var(--back-border);
+  color: #8a5a00;
+}
+.page-card.undeclared { border-style: dashed; }
+
+table.bleed-boxes, table.bleed-edges {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin-top: 6px;
+}
+table.bleed-boxes th, table.bleed-boxes td,
+table.bleed-edges th, table.bleed-edges td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+}
+table.bleed-boxes th, table.bleed-edges th { background: #f0f2f5; font-weight: 600; }
+table.bleed-boxes td.num, table.bleed-edges td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+table.bleed-boxes td.boxname { white-space: nowrap; font-weight: 600; }
+table.bleed-edges .badge { margin-left: 0; }
+
+.size-check { margin: 10px 0 4px; font-size: 14px; }
+.size-check.size-mismatch {
+  color: var(--danger-text);
+  font-weight: 600;
+}
+.size-check.size-ok { color: #146c2e; }
+.table-caption { margin: 10px 0 4px; color: var(--muted); font-size: 13px; }
+
+/* ---- 注释印刷风险区 ---- */
+.section-heading { font-size: 19px; margin: 28px 0 12px; }
+
+.badge.needs-confirmation {
+  background: #fdf3e3;
+  border: 1px solid var(--back-border);
+  color: #8a5a00;
+}
+.badge.off-page {
+  background: var(--blank);
+  border: 1px solid var(--blank-border);
+  color: var(--muted);
+}
+.page-card.needs-confirmation { border-style: dashed; }
+
+table.annots {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin-top: 6px;
+}
+table.annots th, table.annots td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+table.annots th { background: #f0f2f5; font-weight: 600; }
+table.annots td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+table.annots td.boxname { white-space: nowrap; font-weight: 600; }
+table.annots .badge { margin-left: 0; }
+.cell-reason { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+@media (max-width: 560px) {
+  .summary { grid-template-columns: 1fr; gap: 2px; }
+  .radio-row { flex-direction: column; gap: 8px; }
+  .field-row { grid-template-columns: 1fr; }
+}
